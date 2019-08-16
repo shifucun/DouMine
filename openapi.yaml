@@ -1,0 +1,660 @@
+# Copyright 2019 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+swagger: "2.0"
+info:
+  description: "Rest API to access Data Commons open knowledge graph."
+  title: "Data Commons API"
+  version: "1.0.0"
+host: "api.datacommons.org"
+x-google-endpoints:
+- name: "api.datacommons.org"
+  target: "TARGET_IP"
+consumes:
+- "application/json"
+produces:
+- "application/json"
+schemes:
+# Uncomment the next line if you configure SSL for this API.
+#- "https"
+- "http"
+paths:
+  /query:
+    post:
+      description: "Query DataCommons graph with sparql"
+      operationId: "query_post"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Query"
+          schema:
+            $ref: "#/definitions/QueryResponse"
+      parameters:
+      - description: "Message to query"
+        in: body
+        name: "query"
+        required: true
+        schema:
+          $ref: "#/definitions/QueryRequest"
+      security:
+      - api_key: []
+    get:
+      description: "Query DataCommons graph with sparql."
+      operationId: "query_get"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "Query"
+          schema:
+            $ref: "#/definitions/QueryResponse"
+      parameters:
+        - in: query
+          name: "sparql"
+          type: string
+          required: true
+          description: "Sparql query string"
+      security:
+      - api_key: []
+
+  /translate:
+    post:
+      description: "Translate datalog (with schema mapping) into sql query"
+      operationId: "translate"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Translate response"
+          schema:
+            $ref: "#/definitions/TranslateResponse"
+      parameters:
+      - description: "translate request"
+        in: body
+        name: "translate request"
+        required: true
+        schema:
+          $ref: "#/definitions/TranslateRequest"
+      security:
+      - api_key: []
+
+  /node/property-labels:
+    post:
+      description: "Fetch property labels adjacent of nodes"
+      operationId: "property_labels_post"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Response to fetch property labels"
+          schema:
+            $ref: "#/definitions/PropertyLabelsResponse"
+      parameters:
+      - description: "Parameters to fetch property labels"
+        in: body
+        name: "property labels request"
+        required: true
+        schema:
+          $ref: "#/definitions/PropertyLabelsRequest"
+      security:
+      - api_key: []
+    get:
+      description: "Fetch property labels adjacent of nodes"
+      operationId: "property_labels_get"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "Response to fetch property labels"
+          schema:
+            $ref: "#/definitions/PropertyLabelsResponse"
+      parameters:
+        - in: query
+          name: "dcids"
+          type: array
+          items:
+            type: string
+          required: true
+          description: "Dcids of node to query for"
+      security:
+      - api_key: []
+
+  /node/property-values:
+    post:
+      description: "Fetch nodes that linked to source nodes with a given property"
+      operationId: "property_values_post"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Response to fetch property values"
+          schema:
+            $ref: "#/definitions/PropertyValuesResponse"
+      parameters:
+      - description: "Parameters to fetch property values"
+        in: body
+        name: "property values request"
+        required: true
+        schema:
+          $ref: "#/definitions/PropertyValuesRequest"
+      security:
+      - api_key: []
+    get:
+      description: "Fetch nodes that linked to source nodes with a given property"
+      operationId: "property_values_get"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "Response to fetch property values"
+          schema:
+            $ref: "#/definitions/PropertyValuesResponse"
+      parameters:
+        - in: query
+          name: "dcids"
+          type: array
+          items:
+            type: string
+          required: true
+          description: "Dcids of node to query for"
+        - in: query
+          name: "valueType"
+          type: string
+          required: true
+          description: "The type of the neighboring node to query for"
+        - in: query
+          name: "property"
+          type: string
+          required: true
+          description: "The property to get adjacent nodes for"
+        - in: query
+          name: "limit"
+          type: integer
+          description: "Maximum number of nodes to query for"
+      security:
+      - api_key: []
+
+  /node/triples:
+    post:
+      description: "Fetch triples that have the given nodes as subject or object"
+      operationId: "triples_post"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Response to fetch triples"
+          schema:
+            $ref: "#/definitions/TriplesResponse"
+      parameters:
+      - description: "Parameters to fetch triples"
+        in: body
+        name: "triples request"
+        required: true
+        schema:
+          $ref: "#/definitions/TriplesRequest"
+      security:
+      - api_key: []
+    get:
+      description: "Fetch triples that have the given nodes as subject or object"
+      operationId: "triples_get"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "Response to fetch triples"
+          schema:
+            $ref: "#/definitions/TriplesResponse"
+      parameters:
+        - in: query
+          name: "dcids"
+          type: array
+          items:
+            type: string
+          required: true
+          description: "Dcids of node to query for"
+        - in: query
+          name: "limit"
+          type: integer
+          maximum: 500
+          description: "Number of nodes to query per predicate and type"
+      security:
+      - api_key: []
+
+  /node/populations:
+    post:
+      description: "Get populations for a list of places, given the population type and constraining property values"
+      operationId: "populations"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Response to fetch populations"
+          schema:
+            $ref: "#/definitions/PopulationsResponse"
+      parameters:
+      - description: "Parameters to fetch populations"
+        in: body
+        name: "populations request"
+        required: true
+        schema:
+          $ref: "#/definitions/PopulationsRequest"
+      security:
+      - api_key: []
+
+  /node/observations:
+    post:
+      description: "Get observations for a list of population, given the observation constraints"
+      operationId: "observations"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Response to fetch observations"
+          schema:
+            $ref: "#/definitions/ObservationsResponse"
+      parameters:
+      - description: "Parameters to fetch observations"
+        in: body
+        name: "observations request"
+        required: true
+        schema:
+          $ref: "#/definitions/ObservationsRequest"
+      security:
+      - api_key: []
+
+  /node/places-in:
+    post:
+      description: "Get places contained in parent places"
+      operationId: "places_in_post"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Response to fetch places in"
+          schema:
+            $ref: "#/definitions/PlacesInResponse"
+      parameters:
+      - description: "Parameters to fetch places in"
+        in: body
+        name: "places in request"
+        required: true
+        schema:
+          $ref: "#/definitions/PlacesInRequest"
+      security:
+      - api_key: []
+    get:
+      description: "Get places contained in parent places"
+      operationId: "places_in_get"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "Response to fetch places in"
+          schema:
+            $ref: "#/definitions/PlacesInResponse"
+      parameters:
+        - in: query
+          name: "dcids"
+          type: array
+          items:
+            type: string
+          required: true
+          description: "The parent place dcids"
+        - in: query
+          name: "placeType"
+          type: string
+          required: true
+          description: "The child place type"
+      security:
+      - api_key: []
+
+  /bulk/pop-obs:
+    get:
+      description: "Get population and observation data for a place"
+      operationId: "pop_obs"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "Response to fetch population and observation data"
+          schema:
+            $ref: "#/definitions/PopObsResponse"
+      parameters:
+        - in: query
+          name: "dcid"
+          type: string
+          required: true
+          description: "The dcid of the place to query for"
+      security:
+      - api_key: []
+
+  /bulk/place-obs:
+    post:
+      description: "Get observation data for a list of places, given place type, population type, and population constraining properties"
+      operationId: "place_obs"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Response to fetch places observations"
+          schema:
+            $ref: "#/definitions/PlaceObsResponse"
+      parameters:
+      - description: "Parameters to fetch place observations"
+        in: body
+        name: "place obs request"
+        required: true
+        schema:
+          $ref: "#/definitions/PlaceObsRequest"
+      security:
+      - api_key: []
+
+  /bulk/place-kml:
+    get:
+      description: "Get KML coordinates for a place"
+      operationId: "place_kml"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: "Response to fetch place kml data"
+          schema:
+            $ref: "#/definitions/PlaceKmlResponse"
+      parameters:
+        - in: query
+          name: "dcid"
+          type: string
+          required: true
+          description: "The dcid of the place to query for"
+      security:
+      - api_key: []
+
+definitions:
+  QueryRequest:
+    type: object
+    properties:
+      sparql:
+        type: string
+    example:
+      sparql: "SELECT ?name WHERE { ?a typeOf Place . ?a name ?name . ?a dcid \"geoIo/06\" }"
+
+  QueryResponse:
+    type: object
+    properties:
+      header:
+        type: array
+        items:
+          type: string
+      rows:
+        type: array
+        items:
+          $ref: "#/definitions/Row"
+    example:
+      header: ["name", "address", "age"]
+      rows:
+        - cell:
+          - value: "John"
+          - value: "111 main street"
+          - value: "36"
+        - cell:
+          - value: "Mike"
+          - value: "Town Hall"
+          - value: "18"
+
+  Row:
+    type: object
+    properties:
+      cells:
+        type: array
+        items:
+          $ref: "#/definitions/Cell"
+
+  Cell:
+    properties:
+      value:
+        type: string
+      provenanceId:
+        type: string
+
+  TranslateRequest:
+    type: object
+    properties:
+      schemaMapping:
+        type: string
+      datalog:
+        type: string
+
+  TranslateResponse:
+    type: object
+    properties:
+      sql:
+        type: string
+        items:
+          type: string
+      translation:
+        type: array
+        items:
+          type: string
+
+  PropertyLabelsRequest:
+    type: array
+    items:
+      type: string
+
+  PropertyLabelsResponse:
+    type: object
+    additionalProperties:
+      type: object
+      properties:
+        inLabels:
+          type: array
+          items:
+            type: string
+        outLabels:
+          type: array
+          items:
+            type: string
+    example:
+      geoId/0606000:
+        inLabels: ["addressLocality"]
+        outLabels: ["containedInPlace", "geoId", "kmlCoordinates"]
+
+  PropertyValuesRequest:
+    type: object
+    properties:
+      dcids:
+        type: array
+        items:
+          type: string
+      valueType:
+        type: string
+      property:
+        type: string
+      limit:
+        type: integer
+
+  PropertyValuesResponse:
+    type: object
+    additionalProperties:
+      type: object
+      properties:
+        in:
+          type: array
+          items:
+            type: object
+        out:
+          type: array
+          items:
+            type: object
+
+  TriplesRequest:
+    type: object
+    properties:
+      dcids:
+        type: array
+        items:
+          type: string
+      limit:
+        type: integer
+        maximum: 500
+
+  TriplesResponse:
+    type: object
+    additionalProperties:
+      type: array
+      items:
+        type: object
+        properties:
+          subjectId:
+            type: string
+          subjectName:
+            type: string
+          subjectTypes:
+            type: array
+            items:
+              type: string
+          predicate:
+            type: string
+          objectId:
+            type: string
+          objectName:
+            type: string
+          objectValue:
+            type: string
+          objectTypes:
+            type: array
+            items:
+              type: string
+          provenanceId:
+            type: string
+
+  PopulationsRequest:
+    type: object
+    properties:
+      dcids:
+        type: array
+        items:
+          type: string
+      populationType:
+        type: string
+      pvs:
+        type: object
+        properties:
+          property:
+            type: string
+          value:
+            type: string
+
+  PopulationsResponse:
+    type: object
+    additionalProperties:
+      type: string
+    example:
+      geoId/0606000: "dc/p/abc000"
+      geoId/1235: "dc/p/xyz111"
+
+  ObservationsRequest:
+    type: object
+    properties:
+      dcids:
+        type: array
+        items:
+          type: string
+      measuredProperty:
+        type: string
+      observationDate:
+        type: string
+      statsType:
+        type: string
+      observationPeriod:
+        type: string
+      measurementMethod:
+        type: string
+    required:
+    - dcids
+    - measuredProperty
+    - observationDate
+    - statsType
+
+  ObservationsResponse:
+    type: object
+    additionalProperties:
+      type: number
+    example:
+      dc/p/abc000: 30.1
+      dc/p/xyz111: 20
+
+  PlacesInRequest:
+    type: object
+    properties:
+      dcids:
+        type: array
+        items:
+          type: string
+      placeType:
+        type: string
+    required:
+    - dcids
+    - placeType
+
+  PlacesInResponse:
+    type: object
+    additionalProperties:
+      type: array
+      items:
+        type: string
+    example:
+      "geoId/06": ["geoId/323", "geoId/132"]
+      "geoId/08": ["geoId/21"]
+
+  PopObsResponse:
+    type: string
+    description: "Compressed population observation data"
+
+  PlaceObsRequest:
+    type: object
+    properties:
+      placeType:
+        type: string
+      populationType:
+        type: string
+      pvs:
+        type: object
+        properties:
+          property:
+            type: string
+          value:
+            type: string
+    required:
+    - placeType
+    - populationType
+
+  PlaceObsResponse:
+    type: string
+    description: "Compressed place observation data"
+
+  PlaceKmlResponse:
+    type: string
+    description: "Compressed place observation data"
+
+
+# This section requires all requests to any path to require an API key.
+securityDefinitions:
+  # This section configures basic authentication with an API key.
+  api_key:
+    type: "apiKey"
+    name: "key"
+    in: "query"
